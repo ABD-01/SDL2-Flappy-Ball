@@ -28,6 +28,26 @@ if(ANDROID)
 
     target_link_libraries(main SDL2)
 
+elseif(EMSCRIPTEN)
+
+    add_executable(${PROJECT_NAME} ${SRC_FILES})
+
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        SUFFIX ".html"
+    )
+
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -O2
+        -sUSE_SDL=2
+    )
+
+    target_link_options(${PROJECT_NAME} PRIVATE
+        -sUSE_SDL=2
+        -sALLOW_MEMORY_GROWTH=1
+        -sEXIT_RUNTIME=0
+        -sASSERTIONS=1
+    )
+
 else()
     # Desktop (Windows / Linux / macOS)
 
