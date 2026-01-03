@@ -4,68 +4,69 @@ This is my first attempt to work with [SDL2](https://en.wikipedia.org/wiki/Simpl
 general.  
 SDL Version: [2.30.5](https://github.com/libsdl-org/SDL/releases/tag/release-2.30.5)  
 
+https://github.com/user-attachments/assets/e5b228a9-a830-4789-8a3e-32add45441af
 
 ## Development
 
 ### Windows
 
-1. Check if `clang`, or any other C/C++ compiler is installed.
+1. Verify that `clang`, or another C/C++ compiler is installed.
 
-  ```console
-  $ clang --version
-  clang version 19.1.5
-  Target: x86_64-pc-windows-msvc
-  Thread model: posix
-  InstalledDir: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\x64\bin
-  ```
+    ```console
+    $ clang --version
+    clang version 19.1.5
+    Target: x86_64-pc-windows-msvc
+    Thread model: posix
+    InstalledDir: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\x64\bin
+    ```
 
 2. Install CMake for build system. (Optional)
 
-  ```sh
-  $ cmake --version
-  cmake version 3.29.5
-  
-  CMake suite maintained and supported by Kitware (kitware.com/cmake).
-  ```
-3. Get SDL2 libs or build from source code.
+    ```console
+    $ cmake --version
+    cmake version 3.29.5
+    
+    CMake suite maintained and supported by Kitware (kitware.com/cmake).
+    ```
 
-```
-# git clone or manually download the soure code
-cd SDL2-2.30.5
-mkdir -p build-msvc
+3. Get SDL2 libraries or build from source code.
 
-cmake -S . -B build-msvc \
-    -G "MinGW Makefiles" \
-    -DCMAKE_TOOLCHAIN_FILE=/path/to/clang_x86_64_msvc_toolchain.cmake \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
-    -DCMAKE_INSTALL_PREFIX=build-msvc/install
-```
+    ```console
+    # clone or download the soure code
+    $ cd SDL2-2.30.5
+    $ mkdir -p build-msvc
+    
+    $ cmake -S . -B build-msvc \
+        -G "MinGW Makefiles" \
+        -DCMAKE_TOOLCHAIN_FILE=/path/to/clang_x86_64_msvc_toolchain.cmake \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+        -DCMAKE_INSTALL_PREFIX=build-msvc/install
+    ```
 
-The toolchain file is from [github.com/ABD-01/.dotfiles/clang_x86_64_msvc_toolchain.cmake](https://github.com/ABD-01/.dotfiles/blob/master/toolchains/clang_x86_64_msvc_toolchain.cmake)
+    The toolchain file is from [github.com/ABD-01/.dotfiles/clang_x86_64_msvc_toolchain.cmake](https://github.com/ABD-01/.dotfiles/blob/master/toolchains/clang_x86_64_msvc_toolchain.cmake)
+    
+    I install the SDL2 inthe `build` folder for convenience.  
+    Use `-DSDL2_DIR=/path/to/SDL2-2.30.5/build-msvc/install/cmake` flag to let the project find the SDL2 package.  
+    Or append the install prefix to [`CMAKE_PREFIX_PATH`](https://cmake.org/cmake/help/v3.29/variable/CMAKE_PREFIX_PATH.html)
 
-I am installing in the build folder itself to for ....  
-Use `-DSDL2_DIR=/path/to/SDL2-2.30.5/build-msvc/install/cmake` flag to
-enable the project to find the SDL2 package.
-
-Or append the install prefix in [`CMAKE_PREFIX_PATH`](https://cmake.org/cmake/help/v3.29/variable/CMAKE_PREFIX_PATH.html)
-
-```cmake
-list(APPEND CMAKE_PREFIX_PATH "${SDL_PATH}/build-${CMAKE_C_COMPILER_TARGET}/install")
-```
+    ```cmake
+    list(APPEND CMAKE_PREFIX_PATH "${SDL_PATH}/build-${CMAKE_C_COMPILER_TARGET}/install")
+    ```
 
 4. Build the Game
-```console
-cd flappy-ball
-make
-make install
-```
+
+    ```console
+    $ cd flappy-ball
+    $ make
+    $ make install
+    ```
 
 5. Run the application!
 
 
 ### Android
 
-The android device I tested on has following specifications
+Tested on following device:
 
 ```console
 RMX1807:/ $ uname -a
@@ -82,17 +83,8 @@ CPU architecture: 8
 CPU variant     : 0xa
 CPU part        : 0x801
 CPU revision    : 4
-.
-.
-.
-processor       : 7
-BogoMIPS        : 38.40
-Features        : fp asimd evtstrm aes pmull sha1 sha2 crc32
-CPU implementer : 0x51
-CPU architecture: 8
-CPU variant     : 0xa
-CPU part        : 0x800
-CPU revision    : 2
+...
+...more 7 cores
 
 Hardware        : Qualcomm Technologies, Inc SDM660
 RMX1807:/ $
@@ -100,81 +92,80 @@ RMX1807:/ $ getprop ro.build.version.release
 10  # Android 10
 ```
 
-1. Get [Java](https://en.wikipedia.org/wiki/Java_(programming_language))
+1. Install [Java](https://en.wikipedia.org/wiki/Java_(programming_language))
 
-Android apps doesn't run native code, but bytes codes in JVM like
-virtual runtime.
+    Android apps do not run native code directly, but bytes codes in JVM like virtual runtime.
+    
+    SDL2 uses JNI (Java Native Interface) to call your C/C++ code from the Java activity
+    
+    See: [The Relationship Between Android and Java-Medium](https://theiconic.tech/android-java-fdbd55aadc51) for more details.
+    
+    If you already have and Eclipse based IDE (MCUXpresso IDE, STM32CubeIDE, etc), you might already have Java installed in your machine.
+    
+    For example, I have `STM32CubeIDE 1.19.0` which shipped with JDK 21.0.8 (LTS)
+    
+    ```console
+    $ ls /path/to/STM32CubeMX/jre/bin/java*
+    /path/to/STM32CubeMX/jre/bin/java.dll
+    /path/to/STM32CubeMX/jre/bin/java.exe
+    /path/to/STM32CubeMX/jre/bin/javaaccessbridge.dll
+    /path/to/STM32CubeMX/jre/bin/javac.exe
+    /path/to/STM32CubeMX/jre/bin/javadoc.exe
+    /path/to/STM32CubeMX/jre/bin/javajpeg.dll
+    /path/to/STM32CubeMX/jre/bin/javap.exe
+    /path/to/STM32CubeMX/jre/bin/javaw.exe
+    
+    $ export JAVA_HOME=/path/to/STM32CubeMX/jre
+    $ export PATH=$JAVA_HOME/bin:$PATH
+    $ java --version
+    openjdk 21.0.8 2025-07-15 LTS
+    OpenJDK Runtime Environment Temurin-21.0.8+9 (build 21.0.8+9-LTS)
+    OpenJDK 64-Bit Server VM Temurin-21.0.8+9 (build 21.0.8+9-LTS, mixed mode)
+    ```
 
-SDL2 uses JNI (Java Native Interface) to call your C/C++ code from the Java activity
-
-See: [The Relationship Between Android and Java-Medium](https://theiconic.tech/android-java-fdbd55aadc51) for more details.
-
-If you already have some Eclipse based IDE, you might already have
-java installed onto your machine.
-
-For example, I have `STM32CubeIDE 1.19.0` installed, so it shipped with JDK 21.0.8 (LTS)
-
-```console
-$ ls /path/to/STM32CubeMX/jre/bin/java*
-/path/to/STM32CubeMX/jre/bin/java.dll
-/path/to/STM32CubeMX/jre/bin/java.exe
-/path/to/STM32CubeMX/jre/bin/javaaccessbridge.dll
-/path/to/STM32CubeMX/jre/bin/javac.exe
-/path/to/STM32CubeMX/jre/bin/javadoc.exe
-/path/to/STM32CubeMX/jre/bin/javajpeg.dll
-/path/to/STM32CubeMX/jre/bin/javap.exe
-/path/to/STM32CubeMX/jre/bin/javaw.exe
-
-$ export JAVA_HOME=/path/to/STM32CubeMX/jre
-$ export PATH=$JAVA_HOME/bin:$PATH
-$ java --version
-openjdk 21.0.8 2025-07-15 LTS
-OpenJDK Runtime Environment Temurin-21.0.8+9 (build 21.0.8+9-LTS)
-OpenJDK 64-Bit Server VM Temurin-21.0.8+9 (build 21.0.8+9-LTS, mixed mode)
-```
-
-2. Get Android SDK
-
-I am not fond of IDEs, so I have installed only the command line tools
-from [developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only)
-
-Move the unzipped `cmdline-tools` directory into a new directory of your choice, such as `android_sdk`. This new directory is your *Android SDK* directory.
-
-In the unzipped `cmdline-tools` directory, create a sub-directory called `latest`.
-
-Now, accept the Licenses. This would be a prompt dialog box in case of Android Studio IDE installation.
-
-```console
-$ export ANDROID_HOME=D:/android_sdk/
-$ cd $ANDROID_HOME/cmdline-tools/latest/
-$ ./bin/sdkmanager.bat --licenses
-```
+2. Install Android SDK
+    
+    I am not fond of IDEs, so I have installed only the command line tools from [developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only)
+    
+    Move the unzipped `cmdline-tools` directory into a new directory of your choice, such as `android_sdk`. This new directory is your *Android SDK* directory.
+    
+    In the unzipped `cmdline-tools` directory, create a sub-directory called `latest`.
+    
+    Move the original `cmdline-tools` directory contents, including the `lib` directory, bin directory, `NOTICE.txt` file, and `source.properties` file, into the newly created `latest` directory.
+    
+    Accept the Licenses. This would be a prompt dialog box in case of Android Studio IDE installation.
+    
+    ```console
+    $ export ANDROID_HOME=D:/android_sdk/
+    $ cd $ANDROID_HOME/cmdline-tools/latest/
+    $ ./bin/sdkmanager.bat --licenses
+    ```
 
 3. Creating Android Project
 
-Follow the docs from SDL project: [SDL/docs/README-android.md](https://github.com/libsdl-org/SDL/blob/release-2.30.5/docs/README-android.md) [**#RTFM**](https://en.wikipedia.org/wiki/RTFM)
+    [**#RTFM**](https://en.wikipedia.org/wiki/RTFM)
+    Follow the docs from SDL project: [SDL/docs/README-android.md](https://github.com/libsdl-org/SDL/blob/release-2.30.5/docs/README-android.md)
 
     1. Copy `SDL/android-project` directory to a suitable location and rename to the project's name: FlappyBall.
     2. Move or symlink the SDL directory into the "FlappyBall/app/jni" directory
-    3. Move or symlink this repository to the "FlappyBall/app/jni/src" directory.
-        Such that this README file's path is `FlappyBall/app/jni/src/README.md`
-    4. To use CMake edit `FlappyBall/app/build.gradle` o comment out or remove sections containing ndk-build and uncomment the cmake sections.
+    3. Move or symlink this repository to the "FlappyBall/app/jni/src" directory. (Such that this README is at `FlappyBall/app/jni/src/README.md`)
+    4. To use CMake edit `FlappyBall/app/build.gradle`, comment out or remove sections containing ndk-build and uncomment the cmake sections.
     5. To customize your application name, edit `FlappyBall/app/src/main/AndroidManifest.xml` or `FlappyBall/app/src/main/res/values/strings.xml` and replace "org.libsdl.app" with an identifier for your product package.
 
 4. Build and Install the application
 
-Run `./gradlew installDebug` in the project directory. It will build and install your .apk on any connected Android device
-
-```console
-$ cd FlappyBall
-$ ./gradlew.bat installDebug
-
-> Task :app:installDebug
-Installing APK 'app-debug.apk' on 'RMX1807 - 10' for :app:debug
-Installed on 1 device.
-
-BUILD SUCCESSFUL in 8s
-```
+    Run `./gradlew installDebug` in the project directory. It will build and install your .apk on any connected Android device
+    
+    ```console
+    $ cd FlappyBall
+    $ ./gradlew.bat installDebug
+    
+    > Task :app:installDebug
+    Installing APK 'app-debug.apk' on 'RMX1807 - 10' for :app:debug
+    Installed on 1 device.
+    
+    BUILD SUCCESSFUL in 8s
+    ```
 
 
 
