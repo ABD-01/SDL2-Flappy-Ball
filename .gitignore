@@ -1,0 +1,9 @@
+build/
+!build/.gitkeep
+
+install/
+!install/.gitkeep
+
+.cache
+.clang-format
+.clangd
