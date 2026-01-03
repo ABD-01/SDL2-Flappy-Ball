@@ -80,4 +80,8 @@ else()
         #  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
     endif()
 
+    target_link_options(${PROJECT_NAME} PRIVATE
+        "-Wl,/SUBSYSTEM:WINDOWS"
+    )
+
 endif()

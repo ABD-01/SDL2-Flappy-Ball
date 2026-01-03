@@ -29,7 +29,7 @@ $(CONFIG_STAMP):
 
 build: $(CONFIG_STAMP)
 	@echo "--- Building project using generated Makefiles ---"
-	cmake --build $(BUILD_DIR) --parallel 4 -- --no-print-directory
+	cmake --build $(BUILD_DIR) --config Release --parallel 4 -- --no-print-directory
 
 install: build
 	@echo "--- Installing ---"
