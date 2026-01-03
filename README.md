@@ -1,14 +1,33 @@
 # Flappy Ball
 
-This is my first attempt to work with [SDL2](https://en.wikipedia.org/wiki/Simple_DirectMedia_Layer) and game development in
-general.  
+* [Play the Game (Web Version)](#play-the-game-web-version)
+* [Flappy Ball](#gameplay)
+* [Development](#development)
+  + [I. Windows](#i-windows)
+  + [II. Android](#ii-android)
+  + [III. Emscripten (Web Assembly)](#iii-emscripten-web-assembly)
+
+This is my first attempt to work with [SDL2](https://en.wikipedia.org/wiki/Simple_DirectMedia_Layer) and game development in general.  
+I also experimented with cross-compilation of native apps for Android and Web Assembly.  
 SDL Version: [2.30.5](https://github.com/libsdl-org/SDL/releases/tag/release-2.30.5)  
+
+## Play the Game (Web Version)
+
+You can play the SDL2 Flappy Ball directly in your browser here:
+
+$\Longrightarrow$ **[https://abd-01.github.io/SDL2-Flappy-Ball/](https://abd-01.github.io/SDL2-Flappy-Ball/)**
+
+(No installation required)
+
+## Gameplay
 
 https://github.com/user-attachments/assets/e5b228a9-a830-4789-8a3e-32add45441af
 
+<!-- index.md content start -->
+
 ## Development
 
-### Windows
+### I. Windows
 
 1. Verify that `clang`, or another C/C++ compiler is installed.
 
@@ -64,7 +83,7 @@ https://github.com/user-attachments/assets/e5b228a9-a830-4789-8a3e-32add45441af
 5. Run the application!
 
 
-### Android
+### II. Android
 
 Tested on following device:
 
@@ -167,6 +186,78 @@ RMX1807:/ $ getprop ro.build.version.release
     BUILD SUCCESSFUL in 8s
     ```
 
+### III. Emscripten (Web Assembly)
 
+Apart from native and android build, SDL2 also provides support for running application on web using [Emscripten](https://github.com/libsdl-org/SDL/blob/main/docs/README-emscripten.md)
 
+1. Install Emscripten SDK
+
+    ```bash
+    git clone https://github.com/emscripten-core/emsdk.git --depth 1
+    cd emsdk
+
+    ./emsdk install latest
+    ./emsdk activate latest
+    source ./emsdk_env.sh
+    ```
+    Verify:
+
+    ```bash
+    emcc -v
+    ```
+
+2. Required Code Updates
+
+    Browsers do not allow blocking loops. The main thread needs to be free to do browser stuff. So Emscripten lets you set up a [mainloop](https://emscripten.org/docs/porting/emscripten-runtime-environment.html#browser-main-loop).
+    
+    So instead of 
+    
+    ```cpp
+    while (!quit) { ... }
+    ```
+    the code becomes
+    
+    ```cpp
+    int main() {
+    
+        SDL_Window*   window   = SDL_CreateWindow(...);
+        SDL_Renderer* renderer = SDL_CreateRenderer(...);
+        
+    #ifdef __EMSCRIPTEN__
+        emscripten_set_main_loop(gameLoop, 0, 1);
+    #else
+        while (!quit) {
+            gameLoop();
+        }
+    #endif
+    ```
+
+3. Building the application
+
+    Simply compiling with `emcc` and correct flags would be enough.
+    
+    ```console
+    $ emcc main.cpp -s USE_SDL=2 -s ALLOW_MEMORY_GROWTH=1 -O2 -o index.html
+    ```
+    
+    Otherwise, if the project has cmake setup
+    
+    ```console
+    $ mkdir build
+    $ cd build
+    $ emcmake cmake ..
+    $ emmake make -j4
+    ```
+
+4. Running in a Web Server
+
+    Start a web server by
+    
+    ```console
+    $ emrun --no_browser --port 8080 .
+    # or
+    $ python -m http.server 8080
+    ```
+
+<!-- index.md content end -->
 
