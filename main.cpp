@@ -59,6 +59,13 @@ bool      quit = false;
 SDL_Event e;
 bool      gameOver = false;
 
+// Scale game speed on Web to make gameplay slower (adjustable)
+#ifdef __EMSCRIPTEN__
+const float WEB_SPEED_FACTOR = 0.7f; // 70% speed on Emscripten builds
+#else
+const float WEB_SPEED_FACTOR = 1.0f;
+#endif
+
 // Helper to draw a single 7-segment digit
 auto drawDigit = [](int digit, int x, int y, int size) {
     // bitmask for segments: a, b, c, d, e, f, g
@@ -143,15 +150,15 @@ void gameLoop()
                 score    = 0;
                 gameOver = false;
             } else {
-                ball.vy = jumpStrength;
+                ball.vy = jumpStrength * WEB_SPEED_FACTOR;
             }
         }
     }
 
     if (!gameOver) {
-        // Update ball
-        ball.vy += gravity;
-        ball.y += ball.vy;
+        // Update ball (scaled for Web builds)
+        ball.vy += gravity * WEB_SPEED_FACTOR;
+        ball.y += ball.vy * WEB_SPEED_FACTOR;
 
         // Spawn pillars
         if (pillarSpawnTimer-- <= 0) {
@@ -173,7 +180,7 @@ void gameLoop()
 
         // Update pillars
         for (auto& p : pillars) {
-            p.x -= pillarSpeed;
+            p.x -= pillarSpeed * WEB_SPEED_FACTOR;
             if (!p.passed && p.x + p.width < ball.x) {
                 p.passed = true;
                 score++;
@@ -271,11 +278,20 @@ int MAIN_FUNCTION(int argc, char* argv[])
         return 1;
     }
 
+#ifndef TARGET_FPS
+#define TARGET_FPS 60
+#endif
+
+const int FRAME_DELAY_MS = 1000 / TARGET_FPS;
+
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(gameLoop, 0, 1);
+    emscripten_set_main_loop(gameLoop, TARGET_FPS, 1);
 #else
     while (!quit) {
+        Uint32 frameStart = SDL_GetTicks();
         gameLoop();
+        Uint32 frameTime = SDL_GetTicks() - frameStart;
+        if (frameTime < (Uint32)FRAME_DELAY_MS) { SDL_Delay(FRAME_DELAY_MS - frameTime); }
     }
 #endif
 
